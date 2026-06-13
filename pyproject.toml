@@ -1,0 +1,31 @@
+[project]
+name = "slough"
+version = "0.1.0"
+description = "Trace Python variable values through LeetCode-style solution execution"
+readme = "README.md"
+authors = [
+    { name = "prakash S", email = "prakashsellathurai@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+slough = "slough.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/prakashsellathurai/slough"
+
+[build-system]
+requires = ["uv_build>=0.9.26,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore:cannot collect test class 'TestCase'",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+]
