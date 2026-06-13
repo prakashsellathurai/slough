@@ -1,7 +1,7 @@
 [project]
 name = "slough"
 version = "0.1.0"
-description = "Trace Python variable values through LeetCode-style solution execution"
+description = "Experimental toy library to dry-run Python code with line-by-line variable tracing"
 readme = "README.md"
 authors = [
     { name = "prakash S", email = "prakashsellathurai@gmail.com" }
