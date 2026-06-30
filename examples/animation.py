@@ -224,7 +224,7 @@ def draw_summary() -> None:
 
 def render_header() -> None:
     draw_rect(-680, 400, 1360, 40, BG)
-    write_text(-670, 412, ' slough  --  Dry-Run Turtle Animation', FONT_BOLD, ACCENT)
+    write_text(-670, 412, ' slough  --  Dry-Run Animation', FONT_BOLD, ACCENT)
 
 def animate() -> None:
     render_header()
