@@ -7,11 +7,8 @@ from typing import Any
 
 # -- Trace data --------------------------------------------------------------
 
-SOURCE_LINES = __SOURCE_LINES__
-
-STEPS = [
-__STEPS_DATA__
-]
+SOURCE_LINES: list[str] = []
+STEPS:list[dict] = []
 
 DELAY = 0.8
 FONT = ("Consolas", 10, "normal")
@@ -78,7 +75,7 @@ def draw_arrow(x1: float, y1: float, x2: float, y2: float) -> None:
 
 # -- Source code panel -------------------------------------------------------
 
-def draw_code_panel(highlight_lineno: int | None = None) -> None:
+def draw_code_panel(source_lines: list[str], highlight_lineno: int | None = None) -> None:
     draw_rect(-680, 380, 660, 770, CODE_BG)
 
     write_text(-670, 355, " Source", FONT_BOLD, ACCENT)
@@ -87,12 +84,12 @@ def draw_code_panel(highlight_lineno: int | None = None) -> None:
     line_h = 20
     visible = 35
     start_line = max(0, (highlight_lineno or 1) - visible // 2)
-    end_line = min(len(SOURCE_LINES), start_line + visible)
+    end_line = min(len(source_lines), start_line + visible)
 
     for i in range(start_line, end_line):
         lineno = i + 1
         y = 310 - (i - start_line) * line_h
-        raw = SOURCE_LINES[i].rstrip("\\n").rstrip("\\r")
+        raw = source_lines[i].rstrip("\\n").rstrip("\\r")
 
         if highlight_lineno == lineno:
             draw_rect(-678, y - 4, 656, line_h, "#e8f0fe")
@@ -270,12 +267,12 @@ def draw_data_structure(name: str, value: Any,
 
 # -- Summary screen ----------------------------------------------------------
 
-def draw_summary() -> None:
+def draw_summary(steps: list[dict]) -> None:
     draw_rect(-680, 400, 1360, 810, BG)
-    total = len(STEPS)
+    total = len(steps)
     passed = 0
     y = 300
-    for tc_data in STEPS:
+    for tc_data in steps:
         rv = tc_data.get("return_value")
         exp = tc_data.get("expected")
         status = "PASS" if rv == exp else "FAIL" if exp is not None else "?"
@@ -302,11 +299,17 @@ def render_header() -> None:
                FONT_BOLD, ACCENT)
 
 
-def animate() -> None:
+def animate(source_lines: list[str] | None = None,
+            steps: list[dict] | None = None) -> None:
+    if source_lines is None:
+        source_lines = SOURCE_LINES
+    if steps is None:
+        steps = STEPS
+
     render_header()
 
     all_steps = []
-    for tc_idx, tc_data in enumerate(STEPS):
+    for tc_idx, tc_data in enumerate(steps):
         for step in tc_data["steps"]:
             all_steps.append((tc_idx, step))
         final = tc_data["steps"][-1] if tc_data["steps"] else {}
@@ -322,9 +325,9 @@ def animate() -> None:
 
     for i, (tc_idx, step) in enumerate(all_steps):
         if step["event"] == "test_complete":
-            draw_code_panel(None)
+            draw_code_panel(source_lines, None)
         else:
-            draw_code_panel(step.get("lineno"))
+            draw_code_panel(source_lines, step.get("lineno"))
 
         draw_vars_panel(
             step.get("vars", {}),
@@ -335,12 +338,12 @@ def animate() -> None:
         )
 
         write_text(-670, -390,
-                   f"Test case {tc_idx + 1} of {len(STEPS)}",
+                   f"Test case {tc_idx + 1} of {len(steps)}",
                    FONT_SMALL, LINE_NUM_COLOR)
 
         if step["event"] == "test_complete":
             rv = step.get("return_value")
-            expected = STEPS[tc_idx].get("expected")
+            expected = steps[tc_idx].get("expected")
             line = f"Return: {rv!r}"
             if expected is not None:
                 if rv == expected:
@@ -353,10 +356,10 @@ def animate() -> None:
         screen.update()
         time.sleep(DELAY)
 
-    draw_summary()
+    draw_summary(steps)
     screen.update()
     screen.exitonclick()
 
 
 if __name__ == "__main__":
-    animate()
+    animate(source_lines=SOURCE_LINES, steps=STEPS)

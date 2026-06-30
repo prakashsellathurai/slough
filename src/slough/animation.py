@@ -102,22 +102,28 @@ class _ScriptTransformer(ast.NodeTransformer):
         self.source_lines = source_lines
         self.steps_ast = steps_ast
 
-    def visit_Assign(self, node: ast.Assign) -> ast.Assign:
-        if (
-            len(node.targets) == 1
-            and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == "SOURCE_LINES"
-        ):
+    def _replace_value(self, node: ast.Assign | ast.AnnAssign,
+                        name: str) -> ast.Assign | ast.AnnAssign:
+        if name == "SOURCE_LINES" and isinstance(self.source_lines, list):
             node.value = ast.List(
                 elts=[ast.Constant(value=line) for line in self.source_lines],
                 ctx=ast.Load(),
             )
-        elif (
+        elif name == "STEPS":
+            node.value = self.steps_ast
+        return node
+
+    def visit_Assign(self, node: ast.Assign) -> ast.Assign:
+        if (
             len(node.targets) == 1
             and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == "STEPS"
         ):
-            node.value = self.steps_ast
+            return self._replace_value(node, node.targets[0].id)
+        return node
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> ast.AnnAssign:
+        if isinstance(node.target, ast.Name):
+            return self._replace_value(node, node.target.id)
         return node
 
 
