@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from slough.animation import generate_animation, _serialize_value
+from slough.animation import ASTSerializer, generate_animation
 from slough.models import TestCase, TraceResult, TraceStep
 
 
@@ -175,12 +175,13 @@ def test_generate_animation_empty_steps():
 
 
 def test_serialize_value_various_types():
-    assert _serialize_value(None) == "None"
-    assert _serialize_value(True) == "True"
-    assert _serialize_value(42) == "42"
-    assert _serialize_value(3.14) == "3.14"
-    assert _serialize_value("hello") == "'hello'"
-    assert _serialize_value([1, 2, 3]) == "[1, 2, 3]"
-    assert _serialize_value({"a": 1}) == "{'a': 1}"
-    assert _serialize_value((1,)) == "(1,)"
-    assert _serialize_value(set()) == "set()"
+    serializer = ASTSerializer()
+    assert serializer.serialize_value(None) == "None"
+    assert serializer.serialize_value(True) == "True"
+    assert serializer.serialize_value(42) == "42"
+    assert serializer.serialize_value(3.14) == "3.14"
+    assert serializer.serialize_value("hello") == "'hello'"
+    assert serializer.serialize_value([1, 2, 3]) == "[1, 2, 3]"
+    assert serializer.serialize_value({"a": 1}) == "{'a': 1}"
+    assert serializer.serialize_value((1,)) == "(1,)"
+    assert serializer.serialize_value(set()) == "set()"
