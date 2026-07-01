@@ -1,0 +1,35 @@
+name: Publish to PyPI
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check if version changed
+        id: version-check
+        run: |
+          old_version=$(git show HEAD~1:pyproject.toml 2>/dev/null | grep '^version = ' | sed 's/version = "\(.*\)"/\1/' || echo "none")
+          new_version=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "old=$old_version" >> "$GITHUB_OUTPUT"
+          echo "new=$new_version" >> "$GITHUB_OUTPUT"
+          [ "$old_version" != "$new_version" ] && echo "changed=true" >> "$GITHUB_OUTPUT" || echo "changed=false" >> "$GITHUB_OUTPUT"
+      - run: uv build
+        if: steps.version-check.outputs.changed == 'true'
+      - run: uv publish
+        if: steps.version-check.outputs.changed == 'true'
