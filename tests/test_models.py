@@ -49,3 +49,41 @@ def test_trace_result_no_return():
     tc = TestCase(inputs=([1],))
     result = TraceResult(test_case=tc, steps=steps)
     assert result.return_value is None
+
+
+def test_trace_step_deep_nested_vars():
+    step = TraceStep(
+        lineno=1,
+        event="line",
+        func_name="f",
+        vars={"a": {"b": {"c": [1, 2, {"d": "e"}]}}, "f": None},
+    )
+    assert step.vars["a"]["b"]["c"][2]["d"] == "e"
+
+
+def test_trace_step_large_vars():
+    big_dict = {str(i): i for i in range(100)}
+    step = TraceStep(lineno=1, event="call", func_name="f", vars=big_dict)
+    assert len(step.vars) == 100
+
+
+def test_test_case_with_only_expected():
+    tc = TestCase(expected=42)
+    assert tc.inputs == ()
+    assert tc.expected == 42
+
+
+def test_test_case_with_multiple_positional_inputs():
+    tc = TestCase(inputs=(1, "hello", [3, 4], {"a": 5}), expected=True)
+    assert len(tc.inputs) == 4
+
+
+def test_trace_result_with_none_return_but_expected():
+    tc = TestCase(inputs=(1,), expected=None)
+    result = TraceResult(test_case=tc, steps=[], return_value=None)
+    assert result.return_value is None
+
+
+def test_trace_step_with_bytes_in_vars():
+    step = TraceStep(lineno=1, event="line", func_name="f", vars={"data": b"hello"})
+    assert step.vars["data"] == b"hello"

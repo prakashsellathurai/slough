@@ -185,3 +185,61 @@ def test_serialize_value_various_types():
     assert serializer.serialize_value({"a": 1}) == "{'a': 1}"
     assert serializer.serialize_value((1,)) == "(1,)"
     assert serializer.serialize_value(set()) == "set()"
+
+
+def test_serialize_value_custom_object():
+    class Node:
+        def __init__(self, val: int = 0):
+            self.val = val
+
+    serializer = ASTSerializer()
+    result = serializer.serialize_value(Node(42))
+    assert "Node" in result or "42" in result
+
+
+def test_serialize_value_nested_list():
+    serializer = ASTSerializer()
+    result = serializer.serialize_value([[1, 2], [3, [4, 5]]])
+    assert "1" in result
+    assert "5" in result
+
+
+def test_generate_animation_with_exception_steps():
+    steps = [
+        TraceStep(lineno=1, event="call", func_name="f", vars={"x": 0}),
+        TraceStep(lineno=2, event="exception", func_name="f", vars={"x": 0}, return_value=ValueError("div by zero")),
+    ]
+    results = [
+        TraceResult(test_case=TestCase(inputs=(0,)), steps=steps, return_value=None),
+    ]
+
+    fd, path = tempfile.mkstemp(suffix=".py")
+    os.close(fd)
+    try:
+        script = generate_animation(results, SAMPLE_SOURCE, path)
+        assert "exception" in script.lower() or "Error" in script
+    finally:
+        os.unlink(path)
+
+
+def test_generate_animation_empty_results():
+    fd, path = tempfile.mkstemp(suffix=".py")
+    os.close(fd)
+    try:
+        script = generate_animation([], SAMPLE_SOURCE, path)
+        assert "STEPS" in script
+    finally:
+        os.unlink(path)
+
+
+def test_serialize_value_bytes():
+    serializer = ASTSerializer()
+    result = serializer.serialize_value(b"hello")
+    assert "hello" in result or "b'" in result
+
+
+def test_serialize_value_frozenset():
+    serializer = ASTSerializer()
+    result = serializer.serialize_value(frozenset([1, 2, 3]))
+    assert isinstance(result, str)
+    assert len(result) > 0

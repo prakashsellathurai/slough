@@ -235,6 +235,67 @@ def test_parse_html_two_outputs_takes_first():
     assert cases[0].expected == [0, 1]
 
 
+def test_parse_with_float_values():
+    md = """
+## Example:
+Input: x = 3.14, y = 2.0
+Output: 5.14
+    """
+    cases = parse_md_examples(md)
+    assert len(cases) == 1
+    assert cases[0].inputs == (3.14, 2.0)
+
+
+def test_parse_with_boolean_output():
+    md = """
+## Example:
+Input: s = "racecar"
+Output: true
+    """
+    cases = parse_md_examples(md)
+    assert len(cases) == 1
+    assert cases[0].expected is True
+
+
+def test_parse_with_null_output():
+    md = """
+## Example:
+Input: x = 5
+Output: null
+    """
+    cases = parse_md_examples(md)
+    assert len(cases) == 1
+    assert cases[0].expected is None
+
+
+def test_parse_md_examples_empty_header_only():
+    md = "## Example 1:"
+    cases = parse_md_examples(md)
+    assert len(cases) == 0
+
+
+def test_parse_example_lines_with_empty_input():
+    from slough.parser import parse_example_lines
+    result = parse_example_lines("Input: ", None)
+    assert result.inputs == ()
+
+
+def test_parse_example_lines_with_multiple_word_value():
+    from slough.parser import parse_example_lines
+    result = parse_example_lines('Input: name = "hello world"', None)
+    assert result.inputs == ("hello world",)
+
+
+def test_parse_with_escaped_quotes():
+    md = """
+## Example:
+Input: s = "hello\\"world"
+Output: "hello\\"world"
+    """
+    cases = parse_md_examples(md)
+    assert len(cases) == 1
+
+
 def test_parse_markdown_still_works_after_html_changes():
     """Original markdown format must not regress."""
     md = """

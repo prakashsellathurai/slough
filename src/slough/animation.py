@@ -5,7 +5,6 @@ from typing import Any
 
 from slough.models import TraceResult
 
-
 _TEMPLATE_DIR = pathlib.Path(__file__).with_name("templates")
 _SCRIPT_HEADER = (_TEMPLATE_DIR / "animation.py").read_text()
 
@@ -28,13 +27,12 @@ class ASTSerializer:
             return ast.Tuple(elts=[self.value_to_ast(v) for v in val], ctx=ast.Load())
         if isinstance(val, dict):
             return ast.Dict(
-                keys=[self.value_to_ast(k) for k in val.keys()],
+                keys=[self.value_to_ast(k) for k in val],
                 values=[self.value_to_ast(v) for v in val.values()],
             )
-        if isinstance(val, set):
-            return ast.Constant(value=val)
-        if isinstance(val, frozenset):
-            return ast.Constant(value=set(val))
+        if isinstance(val, (set, frozenset)):
+            tree = ast.parse(repr(val), mode="eval")
+            return tree.body
         if hasattr(val, "__dict__"):
             cls_name = type(val).__name__
             return ast.Call(
@@ -55,10 +53,10 @@ class ASTSerializer:
         return ast.unparse(self.value_to_ast(val))
 
     def serialize_results(self, results: list[TraceResult]) -> ast.List:
-        elts = []
+        elts: list[ast.expr] = []
         for result in results:
             tc = result.test_case
-            steps_elts = []
+            steps_elts: list[ast.expr] = []
             for step in result.steps:
                 filtered_vars = {k: v for k, v in step.vars.items() if k != "self"}
                 step_dict = ast.Dict(
@@ -118,12 +116,14 @@ class _ScriptTransformer(ast.NodeTransformer):
             len(node.targets) == 1
             and isinstance(node.targets[0], ast.Name)
         ):
-            return self._replace_value(node, node.targets[0].id)
+            result = self._replace_value(node, node.targets[0].id)
+            return result  # type: ignore[return-value]
         return node
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> ast.AnnAssign:
         if isinstance(node.target, ast.Name):
-            return self._replace_value(node, node.target.id)
+            result = self._replace_value(node, node.target.id)
+            return result  # type: ignore[return-value]
         return node
 
 

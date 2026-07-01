@@ -80,3 +80,78 @@ def test_trace_multiple_params():
 
     assert return_value == {"name": "slough"}
     assert any(s.event == "call" and s.vars.get("key") == "name" for s in steps)
+
+
+def test_trace_recursive_function():
+    code = """
+    def factorial(n):
+        if n <= 1:
+            return 1
+        return n * factorial(n - 1)
+    """
+    fn = _exec_and_get_func(code, "factorial")
+    steps, return_value = trace_function_call(fn, (5,), TRACED_FILENAME)
+    assert return_value == 120
+    # Should have call and return events for each recursion level
+    call_events = [s for s in steps if s.event == "call"]
+    assert len(call_events) == 5  # factorial(5) through factorial(1)
+
+
+def test_trace_function_with_args_and_kwargs():
+    code = """
+    def variadic(*args, **kwargs):
+        return (args, kwargs)
+    """
+    fn = _exec_and_get_func(code, "variadic")
+    steps, return_value = trace_function_call(fn, (1, 2), TRACED_FILENAME)
+    assert return_value == ((1, 2), {})
+
+
+def test_trace_nested_function_calls():
+    code = """
+    def inner(x):
+        return x * 2
+
+    def outer(y):
+        return inner(y + 1)
+    """
+    fn = _exec_and_get_func(code, "outer")
+    steps, return_value = trace_function_call(fn, (5,), TRACED_FILENAME)
+    assert return_value == 12  # (5+1)*2
+    # Should trace both outer and inner calls
+    funcs_traced = {s.func_name for s in steps}
+    assert "outer" in funcs_traced
+    assert "inner" in funcs_traced
+
+
+def test_trace_generator_function():
+    code = """
+    def gen(n):
+        result = []
+        for i in range(n):
+            result.append(i)
+        return result
+    """
+    fn = _exec_and_get_func(code, "gen")
+    steps, return_value = trace_function_call(fn, (3,), TRACED_FILENAME)
+    assert return_value == [0, 1, 2]
+    call_events = [s for s in steps if s.event == "call"]
+    assert any(s.func_name == "gen" for s in steps)
+
+
+def test_tracer_filters_self_in_method():
+    code = """
+    class MyClass:
+        def method(self, x):
+            return x * 2
+    """
+    fn = _exec_and_get_func(code, "MyClass")
+    ns = {}
+    compiled = compile(textwrap.dedent(code), TRACED_FILENAME, "exec")
+    exec(compiled, ns)
+    obj = ns["MyClass"]()
+    steps, return_value = trace_function_call(obj.method, (5,), TRACED_FILENAME)
+    assert return_value == 10
+    # self should be in captured vars
+    call_step = steps[0]
+    assert "self" in call_step.vars

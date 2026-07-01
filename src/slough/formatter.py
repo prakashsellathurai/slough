@@ -1,7 +1,9 @@
-from slough.models import TraceResult, TraceStep
+from typing import Any
+
+from slough.models import TraceResult
 
 
-def _format_vars(vars_dict: dict) -> str:
+def _format_vars(vars_dict: dict[str, Any]) -> str:
     items = []
     for k, v in vars_dict.items():
         if k == "self":

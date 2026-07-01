@@ -4,7 +4,6 @@ from typing import Any
 from slough.models import TestCase, TraceResult
 from slough.tracer import trace_function_call
 
-
 _COMMON_TYPING_IMPORTS = {
     "List": __import__("typing").List,
     "Dict": __import__("typing").Dict,
@@ -23,7 +22,7 @@ def _load_solution_class(filepath: str) -> type:
     compiled = compile(source, filepath, "exec")
     exec(compiled, ns)
 
-    for name, obj in ns.items():
+    for _name, obj in ns.items():
         if inspect.isclass(obj):
             methods = [
                 m for m in obj.__dict__.values()

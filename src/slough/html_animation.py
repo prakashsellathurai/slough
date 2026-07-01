@@ -1,9 +1,7 @@
 import json
-import os
 from typing import Any
 
 from slough.models import TraceResult
-
 
 _HTML_TEMPLATE = r"""<!DOCTYPE html>
 <html lang="en">
