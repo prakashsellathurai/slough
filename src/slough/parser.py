@@ -38,8 +38,6 @@ def _split_input_pairs(line: str) -> dict[str, Any]:
     pairs: dict[str, Any] = {}
     key_pattern = re.compile(r"(\w+)\s*=")
 
-    # Find positions of all '=' signs with preceding key names
-    parts: list[tuple[str, str]] = []
     pos = 0
     while pos < len(line):
         m = key_pattern.search(line, pos)
@@ -94,7 +92,7 @@ def parse_md_examples(md_content: str) -> list[TestCase]:
     example_header = re.compile(
         r"(?:#+\s*)?Example\s*\d*\s*:?\s*$", re.IGNORECASE,
     )
-    example_indices = [i for i, l in enumerate(lines) if example_header.match(l.strip())]
+    example_indices = [i for i, line in enumerate(lines) if example_header.match(line.strip())]
 
     for idx, start in enumerate(example_indices):
         end = example_indices[idx + 1] if idx + 1 < len(example_indices) else len(lines)
@@ -102,16 +100,14 @@ def parse_md_examples(md_content: str) -> list[TestCase]:
 
         input_line = None
         output_line = None
-        for l in block:
-            stripped = l.strip()
+        for line in block:
+            stripped = line.strip()
             if not stripped:
                 continue
-            if re.match(r"Input:", stripped, re.IGNORECASE):
-                if input_line is None:
-                    input_line = stripped
-            elif re.match(r"Output:", stripped, re.IGNORECASE):
-                if output_line is None:
-                    output_line = stripped
+            if re.match(r"Input:", stripped, re.IGNORECASE) and input_line is None:
+                input_line = stripped
+            elif re.match(r"Output:", stripped, re.IGNORECASE) and output_line is None:
+                output_line = stripped
 
         if input_line:
             cases.append(parse_example_lines(input_line, output_line))

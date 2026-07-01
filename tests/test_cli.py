@@ -244,3 +244,63 @@ def test_main_directory_with_explicit_test_cases_override(capsys):
             os.unlink(os.path.join(dir_path, f))
         os.rmdir(dir_path)
         os.unlink(tc_path)
+
+
+def test_main_with_gen_animation_flag(capsys):
+    sol_path = _write_temp_file(TWO_SUM_SOLUTION)
+    test_cases = [
+        {"inputs": [[2, 7, 11, 15], 9], "expected": [0, 1]},
+    ]
+    tc_path = _write_temp_file(json.dumps(test_cases), suffix=".json")
+    anim_fd, anim_path = tempfile.mkstemp(suffix=".py")
+    os.close(anim_fd)
+    try:
+        exit_code = main([sol_path, "--test-cases", tc_path, "-a", anim_path])
+        assert exit_code == 0
+        assert os.path.isfile(anim_path)
+    finally:
+        os.unlink(sol_path)
+        os.unlink(tc_path)
+        os.unlink(anim_path)
+
+
+def test_main_with_gen_html_flag(capsys):
+    sol_path = _write_temp_file(TWO_SUM_SOLUTION)
+    test_cases = [
+        {"inputs": [[2, 7, 11, 15], 9], "expected": [0, 1]},
+    ]
+    tc_path = _write_temp_file(json.dumps(test_cases), suffix=".json")
+    html_fd, html_path = tempfile.mkstemp(suffix=".html")
+    os.close(html_fd)
+    try:
+        exit_code = main([sol_path, "--test-cases", tc_path, "--gen-html", html_path])
+        assert exit_code == 0
+        assert os.path.isfile(html_path)
+    finally:
+        os.unlink(sol_path)
+        os.unlink(tc_path)
+        os.unlink(html_path)
+
+
+def test_main_with_invalid_json(capsys):
+    sol_path = _write_temp_file(TWO_SUM_SOLUTION)
+    tc_path = _write_temp_file("not valid json", suffix=".json")
+    try:
+        exit_code = main([sol_path, "--test-cases", tc_path])
+        assert exit_code == 1
+    finally:
+        os.unlink(sol_path)
+        os.unlink(tc_path)
+
+
+def test_main_with_empty_json_array(capsys):
+    sol_path = _write_temp_file(TWO_SUM_SOLUTION)
+    tc_path = _write_temp_file("[]", suffix=".json")
+    try:
+        exit_code = main([sol_path, "--test-cases", tc_path])
+        captured = capsys.readouterr()
+        # With no test cases, execution may still succeed (no tests to fail)
+        assert exit_code == 0
+    finally:
+        os.unlink(sol_path)
+        os.unlink(tc_path)

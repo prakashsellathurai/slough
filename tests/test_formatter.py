@@ -104,3 +104,53 @@ def test_format_no_extra_newlines():
     lines = output.split("\n")
 
     assert all(line.strip() != "" for line in lines if line.strip())
+
+
+def test_format_exception_event():
+    steps = [
+        TraceStep(lineno=2, event="call", func_name="f", vars={"x": 1}),
+        TraceStep(lineno=3, event="line", func_name="f", vars={"x": 1}),
+        TraceStep(lineno=4, event="exception", func_name="f", vars={"x": 1}, return_value=ValueError("bad")),
+    ]
+    tc = TestCase(inputs=(1,))
+    result = TraceResult(test_case=tc, steps=steps, return_value=None)
+    output = format_results([result], ["def f(x):\n", "    if x:\n", "        raise ValueError('bad')\n"])
+    assert "Exception" in output
+
+
+def test_format_with_no_steps():
+    tc = TestCase(inputs=([1],), expected=[1])
+    result = TraceResult(test_case=tc, steps=[], return_value=[1])
+    output = format_results([result], SOURCE_LINES)
+    assert "Test Case 1" in output
+
+
+def test_format_with_empty_source_lines():
+    steps = [
+        TraceStep(lineno=1, event="call", func_name="f", vars={}),
+    ]
+    tc = TestCase(inputs=())
+    result = TraceResult(test_case=tc, steps=steps)
+    output = format_results([result], [])
+    assert "Test Case 1" in output
+
+
+def test_format_with_long_values():
+    steps = [
+        TraceStep(lineno=1, event="call", func_name="f", vars={"long_key": "x" * 1000}),
+    ]
+    tc = TestCase(inputs=("x" * 1000,))
+    result = TraceResult(test_case=tc, steps=steps)
+    output = format_results([result], ["def f(x):\n"])
+    assert "long_key" in output
+
+
+def test_format_passed_result():
+    steps = [
+        TraceStep(lineno=1, event="call", func_name="f", vars={"x": 1}),
+        TraceStep(lineno=2, event="return", func_name="f", vars={}, return_value=2),
+    ]
+    tc = TestCase(inputs=(1,), expected=2)
+    result = TraceResult(test_case=tc, steps=steps, return_value=2)
+    output = format_results([result], ["def f(x):\n", "    return x + 1\n"])
+    assert "MISMATCH" not in output

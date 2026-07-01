@@ -1,5 +1,8 @@
 import os
 import tempfile
+
+import pytest
+
 from slough.runner import run_test_cases
 from slough.models import TestCase, TraceResult
 
@@ -97,3 +100,61 @@ def test_runner_raises_on_missing_file():
         assert False, "Should have raised FileNotFoundError"
     except FileNotFoundError:
         pass
+
+
+def test_runner_with_no_expected():
+    path = _write_temp_file(TWO_SUM_SOLUTION)
+    try:
+        test_cases = [
+            TestCase(inputs=([2, 7, 11, 15], 9)),
+        ]
+        results = run_test_cases(path, test_cases)
+        assert len(results) == 1
+        assert results[0].return_value == [0, 1]
+        assert results[0].test_case.expected is None
+    finally:
+        os.unlink(path)
+
+
+def test_runner_with_empty_test_cases():
+    path = _write_temp_file(TWO_SUM_SOLUTION)
+    try:
+        results = run_test_cases(path, [])
+        assert results == []
+    finally:
+        os.unlink(path)
+
+
+def test_runner_with_class_having_no_methods():
+    code = """
+class Empty:
+    pass
+"""
+    path = _write_temp_file(code)
+    try:
+        with pytest.raises(ValueError):
+            run_test_cases(path, [TestCase(inputs=([1],), expected=1)])
+    finally:
+        os.unlink(path)
+
+
+def test_runner_with_name_clash_first_class_picked():
+    """Runner picks the first class with methods found in the namespace."""
+    code = """
+class Helper:
+    def util(self, x):
+        return x
+
+class Solution:
+    def solve(self, nums):
+        return sum(nums)
+"""
+    path = _write_temp_file(code)
+    try:
+        test_cases = [TestCase(inputs=([1, 2, 3],), expected=[1, 2, 3])]
+        results = run_test_cases(path, test_cases)
+        # Helper.util is found first and returns identity
+        assert results[0].return_value == [1, 2, 3]
+    finally:
+        os.unlink(path)
+

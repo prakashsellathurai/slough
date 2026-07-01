@@ -25,7 +25,40 @@ filterwarnings = [
     "ignore:cannot collect test class 'TestCase'",
 ]
 
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/slough/html_animation.py" = ["E501"]
+"src/slough/templates/*" = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+strict = true
+python_version = "3.12"
+exclude = ["tests/", "examples/", "dist/", "src/slough/templates/"]
+files = ["src/slough/"]
+
+[tool.coverage.run]
+source = ["src/slough/"]
+omit = ["src/slough/templates/*"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 90
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
+    "pytest-cov>=6.0.0",
+    "hypothesis>=6.120.0",
+    "ruff>=0.9.0",
+    "mypy>=1.15.0",
 ]

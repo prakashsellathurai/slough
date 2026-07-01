@@ -3,7 +3,9 @@ import json
 import os
 import sys
 
+from slough.animation import generate_animation
 from slough.formatter import format_results
+from slough.html_animation import generate_html_animation
 from slough.models import TestCase
 from slough.parser import parse_md_examples
 from slough.runner import run_test_cases
@@ -23,6 +25,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "-o", "--output",
         default=None,
         help="Write output to file instead of stdout",
+    )
+    parser.add_argument(
+        "-a", "--gen-animation",
+        default=None,
+        metavar="FILE",
+        help="Generate a standalone turtle animation script at FILE",
+    )
+    parser.add_argument(
+        "--gen-html",
+        default=None,
+        metavar="FILE",
+        help="Generate a standalone HTML+JS animation page at FILE",
     )
     return parser.parse_args(argv)
 
@@ -97,6 +111,16 @@ def main(argv: list[str] | None = None) -> int:
             return 1
 
     results = run_test_cases(solution_path, test_cases)
+
+    if args.gen_animation:
+        generate_animation(results, source_lines, args.gen_animation)
+        print(f"Animation script generated: {args.gen_animation}")
+        print("Run it with: python", args.gen_animation)
+
+    if args.gen_html:
+        generate_html_animation(results, source_lines, args.gen_html)
+        print(f"HTML animation generated: {args.gen_html}")
+
     output = format_results(results, source_lines)
 
     if args.output:
