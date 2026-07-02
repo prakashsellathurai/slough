@@ -5,8 +5,8 @@ import tempfile
 import pytest
 
 from slough.models import TestCase, TraceResult
-from slough.runner import run_test_cases
 from slough.parser import parse_md_examples
+from slough.runner import run_test_cases
 from slough.tracer import trace_function_call
 
 
@@ -36,18 +36,18 @@ def test_syntax_error_in_solution():
 
 def test_function_raises_exception_during_trace():
     import textwrap
-    TRACED_FILENAME = "<slough-test>"
+    traced_filename = "<slough-test>"
     code = """
     def crash(x):
         raise ValueError("boom")
     """
     ns = {}
-    compiled = compile(textwrap.dedent(code), TRACED_FILENAME, "exec")
+    compiled = compile(textwrap.dedent(code), traced_filename, "exec")
     exec(compiled, ns)
     fn = ns["crash"]
 
     with pytest.raises(ValueError, match="boom"):
-        trace_function_call(fn, (1,), TRACED_FILENAME)
+        trace_function_call(fn, (1,), traced_filename)
 
 
 def test_parse_md_with_empty_input_line():
@@ -131,7 +131,7 @@ def test_missing_readme_no_test_cases():
 
 
 def test_invalid_json_in_test_file():
-    from slough.cli import main, _load_test_cases
+    from slough.cli import _load_test_cases
     fd, path = tempfile.mkstemp(suffix=".json")
     with os.fdopen(fd, "w") as f:
         f.write("not json at all")

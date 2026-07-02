@@ -15,7 +15,7 @@ class ASTSerializer:
             return ast.Constant(value=None)
         if isinstance(val, bool):
             return ast.Constant(value=val)
-        if isinstance(val, (int, float)):
+        if isinstance(val, int | float):
             return ast.Constant(value=val)
         if isinstance(val, str):
             return ast.Constant(value=val)
@@ -30,7 +30,7 @@ class ASTSerializer:
                 keys=[self.value_to_ast(k) for k in val],
                 values=[self.value_to_ast(v) for v in val.values()],
             )
-        if isinstance(val, (set, frozenset)):
+        if isinstance(val, set | frozenset):
             tree = ast.parse(repr(val), mode="eval")
             return tree.body
         if hasattr(val, "__dict__"):

@@ -1,9 +1,12 @@
 import textwrap
-from hypothesis import given, assume, strategies as st
-from slough.models import TraceStep, TestCase, TraceResult
-from slough.tracer import trace_function_call
+
+from hypothesis import assume, given
+from hypothesis import strategies as st
+
 from slough.formatter import format_results
-from slough.parser import parse_md_examples, _parse_value
+from slough.models import TestCase, TraceResult, TraceStep
+from slough.parser import _parse_value, parse_md_examples
+from slough.tracer import trace_function_call
 
 TRACED_FILENAME = "<slough-test>"
 
@@ -20,7 +23,7 @@ def _exec_and_get_func(code: str, func_name: str):
     b=st.integers(min_value=-1000, max_value=1000),
 )
 def test_tracer_always_captures_call_and_return(a, b):
-    code = f"""
+    code = """
     def add(a, b):
         return a + b
     """
@@ -110,7 +113,7 @@ def test_trace_result_steps_independent(values):
     tc = TestCase(inputs=(values,), expected=values)
     result = TraceResult(test_case=tc, steps=steps, return_value=values)
     assert len(result.steps) == len(values)
-    for step, val in zip(result.steps, values):
+    for step, val in zip(result.steps, values, strict=False):
         assert step.vars.get("x") == val
 
 

@@ -1,4 +1,4 @@
-from slough.models import TraceStep, TestCase, TraceResult
+from slough.models import TestCase, TraceResult, TraceStep
 
 
 def test_trace_step_creation():

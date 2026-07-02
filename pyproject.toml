@@ -1,6 +1,6 @@
 [project]
 name = "slough"
-version = "0.2.0"
+version = "0.2.1"
 description = "Experimental toy library to dry-run Python code with line-by-line variable tracing"
 readme = "README.md"
 authors = [
@@ -28,6 +28,7 @@ filterwarnings = [
 [tool.ruff]
 line-length = 120
 target-version = "py312"
+exclude = ["examples/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]

@@ -3,9 +3,8 @@ import tempfile
 
 import pytest
 
-from slough.runner import run_test_cases
 from slough.models import TestCase, TraceResult
-
+from slough.runner import run_test_cases
 
 TWO_SUM_SOLUTION = """
 class Solution:
@@ -97,7 +96,7 @@ def test_runner_detects_wrong_answer():
 def test_runner_raises_on_missing_file():
     try:
         run_test_cases("/nonexistent/file.py", [TestCase(inputs=([1],), expected=1)])
-        assert False, "Should have raised FileNotFoundError"
+        raise AssertionError("Should have raised FileNotFoundError")
     except FileNotFoundError:
         pass
 

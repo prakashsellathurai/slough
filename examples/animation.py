@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any
 
+
 @dataclass(frozen=True)
 class AnimationConfig:
     delay: float = 0.8
@@ -122,7 +123,7 @@ class ListVisualizer(DataStructureVisualizer):
     """Renders flat sequences as index boxes."""
 
     def can_visualize(self, value: Any) -> bool:
-        return isinstance(value, (list, tuple)) and 2 <= len(value) <= 20 and all((not isinstance(v, (list, dict)) for v in value))
+        return isinstance(value, list | tuple) and 2 <= len(value) <= 20 and all(not isinstance(v, list | dict) for v in value)
 
     def draw(self, renderer: TurtleRenderer, config: AnimationConfig, value: Any, y_start: float) -> tuple[bool, float]:
         items = list(value)
@@ -309,7 +310,7 @@ class SummaryPanel(Panel):
         bg_h = cfg.panel_height + cfg.panel_top - cfg.header_y
         renderer.draw_rect(cfg.code_panel_x, cfg.header_y, cfg.header_width, bg_h, cfg.bg)
         total = len(steps)
-        passed = sum((1 for tc in steps if tc.get('return_value') == tc.get('expected') and tc.get('expected') is not None))
+        passed = sum(1 for tc in steps if tc.get('return_value') == tc.get('expected') and tc.get('expected') is not None)
         color = cfg.val_color if passed == total else cfg.fail_color
         renderer.write_text(0, cfg.panel_top - 30, f'  {passed}/{total} tests passed', ('Consolas', 16, 'bold'), color, 'center')
         y = cfg.panel_top - 80

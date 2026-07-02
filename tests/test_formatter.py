@@ -1,6 +1,5 @@
-from slough.models import TraceStep, TestCase, TraceResult
 from slough.formatter import format_results
-
+from slough.models import TestCase, TraceResult, TraceStep
 
 SOURCE_LINES = [
     "class Solution:\n",

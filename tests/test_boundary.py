@@ -1,8 +1,8 @@
 import textwrap
 
 from slough.models import TestCase
-from slough.tracer import trace_function_call
 from slough.parser import parse_md_examples
+from slough.tracer import trace_function_call
 
 TRACED_FILENAME = "<slough-test>"
 
@@ -53,7 +53,7 @@ Output: 13
 
 def test_empty_source_lines_in_format():
     from slough.formatter import format_results
-    from slough.models import TraceResult, TraceStep
+    from slough.models import TraceResult
     tc = TestCase(inputs=(1,), expected=1)
     result = TraceResult(test_case=tc, steps=[], return_value=1)
     output = format_results([result], [])

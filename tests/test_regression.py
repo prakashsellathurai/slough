@@ -6,8 +6,9 @@ This ensures bugs are not reintroduced in future versions.
 """
 
 import pytest
-from slough.models import TraceStep, TestCase, TraceResult
+
 from slough.formatter import format_results
+from slough.models import TestCase, TraceResult, TraceStep
 from slough.parser import parse_md_examples
 
 
@@ -94,19 +95,20 @@ def test_parse_html_only_explanation_no_output():
 def test_tracer_captures_exception_event():
     """When a traced function raises, the exception propagates to the caller."""
     import textwrap
+
     from slough.tracer import trace_function_call
 
-    TRACED_FILENAME = "<slough-test>"
+    traced_filename = "<slough-test>"
     code = """
     def faulty(x):
         return 1 // x
     """
     ns = {}
-    compiled = compile(textwrap.dedent(code), TRACED_FILENAME, "exec")
+    compiled = compile(textwrap.dedent(code), traced_filename, "exec")
     exec(compiled, ns)
     fn = ns["faulty"]
     with pytest.raises(ZeroDivisionError):
-        trace_function_call(fn, (0,), TRACED_FILENAME)
+        trace_function_call(fn, (0,), traced_filename)
 
 
 def test_run_inplace_method_no_return():
@@ -116,8 +118,9 @@ def test_run_inplace_method_no_return():
     """
     import os
     import tempfile
-    from slough.runner import run_test_cases
+
     from slough.models import TestCase
+    from slough.runner import run_test_cases
 
     code = """
 class Solution:

@@ -4,7 +4,6 @@ import tempfile
 from slough.animation import ASTSerializer, generate_animation
 from slough.models import TestCase, TraceResult, TraceStep
 
-
 SAMPLE_SOURCE = [
     "class Solution:\n",
     "    def twoSum(self, nums: list[int], target: int) -> list[int]:\n",

@@ -1,6 +1,6 @@
 import textwrap
-from slough.tracer import trace_function_call
 
+from slough.tracer import trace_function_call
 
 TRACED_FILENAME = "<slough-test>"
 
@@ -135,7 +135,7 @@ def test_trace_generator_function():
     fn = _exec_and_get_func(code, "gen")
     steps, return_value = trace_function_call(fn, (3,), TRACED_FILENAME)
     assert return_value == [0, 1, 2]
-    call_events = [s for s in steps if s.event == "call"]
+    [s for s in steps if s.event == "call"]
     assert any(s.func_name == "gen" for s in steps)
 
 
@@ -145,7 +145,7 @@ def test_tracer_filters_self_in_method():
         def method(self, x):
             return x * 2
     """
-    fn = _exec_and_get_func(code, "MyClass")
+    _exec_and_get_func(code, "MyClass")
     ns = {}
     compiled = compile(textwrap.dedent(code), TRACED_FILENAME, "exec")
     exec(compiled, ns)

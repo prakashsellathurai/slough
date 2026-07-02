@@ -1,10 +1,8 @@
 import json
 import os
 import tempfile
-from slough.cli import parse_args, main
-from slough.models import TestCase
-from slough.parser import parse_md_examples
 
+from slough.cli import main, parse_args
 
 TWO_SUM_SOLUTION = """
 class Solution:
@@ -119,7 +117,11 @@ def test_main_missing_test_cases(capsys):
         exit_code = main([sol_path, "--test-cases", "/nonexistent.json"])
         captured = capsys.readouterr()
         assert exit_code == 1
-        assert "FileNotFoundError" in captured.out or "No such file" in captured.out or "not found" in captured.out.lower()
+        assert (
+            "FileNotFoundError" in captured.out
+            or "No such file" in captured.out
+            or "not found" in captured.out.lower()
+        )
     finally:
         os.unlink(sol_path)
 
@@ -298,7 +300,7 @@ def test_main_with_empty_json_array(capsys):
     tc_path = _write_temp_file("[]", suffix=".json")
     try:
         exit_code = main([sol_path, "--test-cases", tc_path])
-        captured = capsys.readouterr()
+        capsys.readouterr()
         # With no test cases, execution may still succeed (no tests to fail)
         assert exit_code == 0
     finally:

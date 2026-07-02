@@ -1,5 +1,5 @@
 from slough.models import TestCase
-from slough.parser import parse_md_examples, parse_example_lines
+from slough.parser import parse_example_lines, parse_md_examples
 
 
 def test_parse_simple_example():
